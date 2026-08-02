@@ -92,6 +92,21 @@ export interface CourseSource {
   license: string
 }
 
+export interface TrainingModelDefinition {
+  id: string
+  implementation: 'procedural' | 'gltf'
+  poseId: string
+  adultOnly: true
+  fullyClothed: true
+  assetPath?: string
+  texturePath?: string
+  position?: Vec3
+  scale?: number
+  sourceLabel?: string
+  sourceUrl?: string
+  license?: string
+}
+
 export interface Course {
   id: string
   slug: string
@@ -127,13 +142,7 @@ export interface Course {
   version: string
   updatedAt: string
   sources: readonly CourseSource[]
-  model: {
-    id: string
-    implementation: 'procedural' | 'gltf'
-    poseId: string
-    adultOnly: true
-    fullyClothed: true
-  }
+  model: TrainingModelDefinition
   cameraPresets: readonly CameraPreset[]
   ropeSegments: readonly RopeSegment[]
   riskZones: readonly RiskZone[]

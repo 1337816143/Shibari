@@ -8,7 +8,7 @@ export function HomePage() {
         <div className="hero__content">
           <div className="hero__eyebrows">
             <span className="pill pill--accent">仅面向成年人</span>
-            <span className="pill">Phase 2 技术实现</span>
+            <span className="pill">Phase 2 · 高精度模型</span>
           </div>
           <h1>
             看清每一段绳路，<br />

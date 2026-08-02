@@ -8,6 +8,7 @@ describe('static pages', () => {
   it('renders the safety-first home call to action', () => {
     render(<HomePage />)
     expect(screen.getByRole('heading', { name: /看清每一段绳路/ })).toBeInTheDocument()
+    expect(screen.getByText('Phase 2 · 高精度模型')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /先学安全/ })).toHaveAttribute('href', '#/safety')
   })
 
@@ -26,4 +27,3 @@ describe('static pages', () => {
     expect(screen.getByRole('heading', { name: '绳艺不是“安全的”，只能持续降低风险。' })).toBeInTheDocument()
   })
 })
-

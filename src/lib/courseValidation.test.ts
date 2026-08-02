@@ -3,8 +3,28 @@ import { singleColumnDemo } from '../data/courses/singleColumnDemo'
 import { validateCourse } from './courseValidation'
 
 describe('validateCourse', () => {
-  it('accepts the phase-one demo course', () => {
+  it('accepts the high-fidelity demo course', () => {
     expect(validateCourse(singleColumnDemo)).toEqual([])
+  })
+
+  it('requires local, licensed assets for GLTF training models', () => {
+    const invalid = {
+      ...singleColumnDemo,
+      model: {
+        ...singleColumnDemo.model,
+        assetPath: 'https://untracked.example/model.glb',
+        texturePath: '../unknown-textures',
+        sourceLabel: '',
+        sourceUrl: '',
+        license: '',
+        scale: 0,
+      },
+    }
+    const errors = validateCourse(invalid)
+
+    expect(errors).toContain('GLTF models require safe repository-local asset and texture paths.')
+    expect(errors).toContain('GLTF models require source and license metadata.')
+    expect(errors).toContain('GLTF models require a positive display scale.')
   })
 
   it('requires a reviewer before a course can be published', () => {

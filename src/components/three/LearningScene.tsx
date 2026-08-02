@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/immutability */
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
-import { useEffect, useRef } from 'react'
+import { ContactShadows, Environment, Lightformer, OrbitControls } from '@react-three/drei'
+import { Suspense, useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import type { CameraPreset, Course, CourseStep } from '../../types/course'
 import { RopeSystem, type ReleasePlaybackState } from './RopeSystem'
 import { SafetyOverlays } from './SafetyOverlays'
+import { RealisticTrainingModel } from './RealisticTrainingModel'
 import { TrainingMannequin } from './TrainingMannequin'
 
 interface SceneOptions {
@@ -67,14 +68,39 @@ function SceneContent({
   options: SceneOptions
   release?: ReleasePlaybackState
 }) {
+  const useRealisticModel = course.model.implementation === 'gltf' && options.quality !== 'low'
+  const realisticQuality = options.quality === 'high' ? 'high' : 'medium'
+
   return (
     <>
       <CameraRig preset={preset} />
-      <ambientLight intensity={0.72} />
-      <directionalLight position={[3, 6, 4]} intensity={2.3} castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-4, 2, -3]} intensity={0.72} color="#bce7df" />
+      <hemisphereLight args={['#fbfdf9', '#7f8c85', 1.18]} />
+      <ambientLight intensity={0.34} />
+      <directionalLight
+        position={[3.8, 6.5, 4.6]}
+        intensity={3.05}
+        castShadow
+        shadow-mapSize={[options.quality === 'high' ? 2048 : 1024, options.quality === 'high' ? 2048 : 1024]}
+        shadow-bias={-0.00018}
+        shadow-normalBias={0.035}
+        shadow-camera-far={12}
+      />
+      <directionalLight position={[-4.5, 3, -3.5]} intensity={1.05} color="#b8ddd6" />
+      <directionalLight position={[1, 3.6, -4.5]} intensity={0.78} color="#f3d6bd" />
       <group scale={[options.mirrored ? -1 : 1, 1, 1]}>
-        <TrainingMannequin visible={options.modelVisible} opacity={options.modelOpacity} />
+        <group visible={options.modelVisible}>
+          {useRealisticModel ? (
+            <Suspense fallback={<TrainingMannequin opacity={options.modelOpacity} />}>
+              <RealisticTrainingModel
+                model={course.model}
+                opacity={options.modelOpacity}
+                quality={realisticQuality}
+              />
+            </Suspense>
+          ) : (
+            <TrainingMannequin opacity={options.modelOpacity} />
+          )}
+        </group>
         <RopeSystem
           segments={course.ropeSegments}
           progress={progress}
@@ -94,10 +120,16 @@ function SceneContent({
       </group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.27, 0]} receiveShadow>
         <circleGeometry args={[5.5, 64]} />
-        <meshStandardMaterial color="#d9ded8" roughness={0.9} />
+        <meshStandardMaterial color="#d9dfda" roughness={0.94} />
       </mesh>
-      {options.quality !== 'low' && <ContactShadows position={[0, -0.25, 0]} opacity={0.28} scale={5} blur={2.6} far={4} frames={1} />}
-      {options.quality === 'high' && <Environment preset="studio" environmentIntensity={0.22} />}
+      {options.quality !== 'low' && <ContactShadows position={[-0.48, -0.255, 0]} opacity={0.34} scale={4.5} blur={2.1} far={3.5} frames={1} />}
+      {options.quality === 'high' && (
+        <Environment resolution={96} environmentIntensity={0.42}>
+          <Lightformer intensity={2.1} color="#f8fbf7" position={[0, 4, 4]} scale={[5, 5, 1]} />
+          <Lightformer intensity={1.2} color="#b7ded7" position={[-4, 2, -2]} rotation={[0, Math.PI / 2, 0]} scale={[4, 3, 1]} />
+          <Lightformer intensity={0.8} color="#f1d3bb" position={[4, 3, -1]} rotation={[0, -Math.PI / 2, 0]} scale={[3, 3, 1]} />
+        </Environment>
+      )}
       <OrbitControls
         key={preset.id}
         makeDefault
@@ -143,11 +175,12 @@ export function LearningScene({
       onCreated={({ gl }) => {
         gl.outputColorSpace = THREE.SRGBColorSpace
         gl.toneMapping = THREE.ACESFilmicToneMapping
-        gl.toneMappingExposure = 1.02
+        gl.toneMappingExposure = 1.08
+        gl.shadowMap.type = THREE.PCFSoftShadowMap
       }}
     >
-      <color attach="background" args={['#e8ece7']} />
-      <fog attach="fog" args={['#e8ece7', 7, 13]} />
+      <color attach="background" args={['#e7ebe8']} />
+      <fog attach="fog" args={['#e7ebe8', 7, 13]} />
       <SceneContent course={course} step={step} progress={progress} preset={preset} options={options} release={release} />
     </Canvas>
   )

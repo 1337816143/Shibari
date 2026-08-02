@@ -11,6 +11,18 @@ export function validateCourse(course: Course): string[] {
   const viewIds = new Set(course.cameraPresets.map((preset) => preset.id))
 
   if (!course.id || !course.slug || !course.title) errors.push('Course identity is incomplete.')
+  if (course.model.implementation === 'gltf') {
+    const assetPaths = [course.model.assetPath, course.model.texturePath]
+    if (assetPaths.some((path) => !path || path.includes('..') || /^https?:\/\//.test(path))) {
+      errors.push('GLTF models require safe repository-local asset and texture paths.')
+    }
+    if (!course.model.sourceLabel || !course.model.sourceUrl || !course.model.license) {
+      errors.push('GLTF models require source and license metadata.')
+    }
+    if (!Number.isFinite(course.model.scale) || (course.model.scale ?? 0) <= 0) {
+      errors.push('GLTF models require a positive display scale.')
+    }
+  }
   if (course.review.status === 'published' && course.review.reviewers.length === 0) {
     errors.push('Published courses require at least one named reviewer.')
   }
