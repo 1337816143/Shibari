@@ -423,9 +423,11 @@
   .player-toolbar__status { display: flex; align-items: center; min-width: 0; color: var(--muted); font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .player-toolbar__status strong { margin-left: 3px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; }
   .active-segment-dot { width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 4px rgba(239,114,88,.15); }
+  .active-segment-dot.is-release { background: var(--aqua); box-shadow: 0 0 0 4px rgba(85,203,187,.17); }
   .player-toolbar__actions { display: flex; gap: 3px; }
   .player-toolbar__actions button { height: 31px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--muted); font-size: .65rem; cursor: pointer; }
   .player-toolbar__actions button:hover, .player-toolbar__actions button.is-active { border-color: var(--line); background: #fff; color: var(--sage-700); }
+  .player-toolbar__actions button.is-release-active { border-color: rgba(85,203,187,.35); background: #e3f5f1; color: #16796d; }
   .player-toolbar__actions button:disabled { cursor: not-allowed; opacity: .58; }
   .player-toolbar__actions button:disabled:hover { border-color: transparent; background: none; color: var(--muted); }
   .player-toolbar__actions svg { width: 14px; }
@@ -435,6 +437,7 @@
   .scene-legend span { display: flex; align-items: center; gap: 5px; }
   .scene-legend i { width: 7px; height: 7px; border-radius: 50%; }
   .legend-current { background: var(--coral); }
+  .legend-release { background: var(--aqua); }
   .legend-complete { background: #b58b62; }
   .legend-risk { border: 1px solid var(--coral); background: transparent; }
   .legend-contact { background: var(--aqua); }
@@ -447,6 +450,7 @@
   .fallback-diagram__label span { color: var(--faint); font-size: .57rem; }
   .fallback-diagram__label strong { font-size: .8rem; }
   .fallback-diagram__label small { margin-top: 2px; color: var(--muted); font-size: .57rem; }
+  .fallback-diagram--release { background: #e5efeb; }
 
   .view-controls { min-height: 52px; display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 7px 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: rgba(255,255,255,.82); }
   .view-presets, .layer-controls { display: flex; align-items: center; gap: 4px; min-width: 0; }
@@ -490,6 +494,13 @@
   .step-jump button span { width: 17px; height: 17px; display: grid; place-items: center; border-radius: 50%; background: var(--sage-100); font-size: .55rem; }
   .step-jump button.is-active span { background: var(--coral); color: #fff; }
   .step-jump button small { white-space: nowrap; font-size: .57rem; }
+  .release-controls .timeline-range { background: linear-gradient(to right, #35a998 var(--timeline-progress), var(--sage-100) var(--timeline-progress)); }
+  .release-controls .timeline-range::-webkit-slider-thumb { background: #35a998; }
+  .release-controls .timeline-range::-moz-range-thumb { background: #35a998; }
+  .release-controls .play-button { background: #176f64; }
+  .release-controls .release-exit { color: var(--coral-dark); }
+  .release-phase-jump button.is-active { border-color: rgba(53,169,152,.42); background: #def3ef; color: #176f64; }
+  .release-phase-jump button.is-active span { background: #35a998; }
 
   .step-panel { max-height: calc(66vh + 159px); min-height: 640px; overflow-y: auto; padding: 24px; border-left: 1px solid var(--line); background: #fcfcf8; scrollbar-color: var(--sage-200) transparent; }
   .step-panel__header { display: flex; justify-content: space-between; gap: 18px; align-items: start; }
@@ -528,6 +539,17 @@
   .practice-note button.is-active { color: var(--coral-dark); }
   .practice-note textarea { width: 100%; resize: vertical; padding: 10px; border: 1px solid var(--line); border-radius: 9px; outline: 0; background: #fff; color: var(--ink); font-size: .7rem; }
   .practice-note textarea:focus { border-color: var(--sage-500); }
+  .release-review-state { flex: 0 0 auto; display: flex; align-items: center; gap: 4px; padding: 5px 7px; border-radius: 7px; background: #f7ead5; color: #906126; font-size: .58rem; white-space: nowrap; }
+  .release-review-state svg { width: 14px; }
+  .release-disclaimer { display: grid; grid-template-columns: 20px 1fr; gap: 9px; margin: 18px 0; padding: 13px; border: 1px solid rgba(227,166,83,.32); border-radius: 10px; background: #f8edda; }
+  .release-disclaimer svg { width: 18px; color: #a06928; }
+  .release-disclaimer p { color: #78542b; font-size: .7rem; }
+  .step-objective--release { border-left-color: #35a998; background: #def3ef; }
+  .step-objective--release span { color: #176f64; }
+  .step-objective--release p { color: #275f57; }
+  .release-emergency { margin-top: 18px; padding: 14px; border-radius: 10px; background: var(--sage-950); }
+  .release-emergency strong { color: var(--sand); font-size: .68rem; }
+  .release-emergency p { margin-top: 4px; color: rgba(255,255,255,.72); font-size: .72rem; }
 
   .course-player:fullscreen, .course-player.is-fullscreen { width: 100vw; height: 100vh; border: 0; border-radius: 0; grid-template-columns: minmax(0, 1.8fr) minmax(330px, .62fr); }
   .course-player:fullscreen .player-stage-column, .course-player.is-fullscreen .player-stage-column { grid-template-rows: auto minmax(0, 1fr) auto auto; }
@@ -692,11 +714,13 @@
     .opacity-control input { width: 100%; }
     .player-controls__row { align-items: flex-start; }
     .player-controls__secondary { max-width: 47%; flex-wrap: wrap; justify-content: end; }
+    .release-controls .player-controls__secondary { max-width: 55%; }
     .tool-button { width: 31px; justify-content: center; padding: 0; }
     .step-jump button { min-width: 35px; justify-content: center; }
     .step-jump button small { display: none; }
     .step-panel { padding: 22px 18px; }
     .step-panel__header { flex-direction: column; }
+    .release-review-state { align-self: flex-start; }
     .course-details { padding-top: 60px; }
     .course-details__main > article, .course-details__aside > div { padding: 26px; }
     .course-details__aside { grid-template-columns: 1fr; }

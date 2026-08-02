@@ -84,10 +84,9 @@ export function Shell({ children, currentPage }: ShellProps) {
         </div>
         <div className="site-footer__legal">
           <span>仅面向成年人 · 在线 3D 教程不能替代合格教师的现场指导</span>
-          <span>Phase 1 · 内容审核中</span>
+          <span>Phase 2 · 内容审核中</span>
         </div>
       </footer>
     </div>
   )
 }
-

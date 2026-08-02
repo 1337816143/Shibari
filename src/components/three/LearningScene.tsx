@@ -4,7 +4,7 @@ import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import type { CameraPreset, Course, CourseStep } from '../../types/course'
-import { RopeSystem } from './RopeSystem'
+import { RopeSystem, type ReleasePlaybackState } from './RopeSystem'
 import { SafetyOverlays } from './SafetyOverlays'
 import { TrainingMannequin } from './TrainingMannequin'
 
@@ -58,12 +58,14 @@ function SceneContent({
   progress,
   preset,
   options,
+  release,
 }: {
   course: Course
   step: CourseStep
   progress: number
   preset: CameraPreset
   options: SceneOptions
+  release?: ReleasePlaybackState
 }) {
   return (
     <>
@@ -80,6 +82,7 @@ function SceneContent({
           showCompleted={options.showCompleted}
           focusCurrent={options.focusCurrent}
           quality={options.quality}
+          release={release}
         />
         <SafetyOverlays
           riskZones={course.riskZones}
@@ -119,6 +122,7 @@ export function LearningScene({
   preset,
   playing,
   options,
+  release,
 }: {
   course: Course
   step: CourseStep
@@ -126,6 +130,7 @@ export function LearningScene({
   preset: CameraPreset
   playing: boolean
   options: SceneOptions
+  release?: ReleasePlaybackState
 }) {
   return (
     <Canvas
@@ -143,7 +148,7 @@ export function LearningScene({
     >
       <color attach="background" args={['#e8ece7']} />
       <fog attach="fog" args={['#e8ece7', 7, 13]} />
-      <SceneContent course={course} step={step} progress={progress} preset={preset} options={options} />
+      <SceneContent course={course} step={step} progress={progress} preset={preset} options={options} release={release} />
     </Canvas>
   )
 }
