@@ -426,6 +426,8 @@
   .player-toolbar__actions { display: flex; gap: 3px; }
   .player-toolbar__actions button { height: 31px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--muted); font-size: .65rem; cursor: pointer; }
   .player-toolbar__actions button:hover, .player-toolbar__actions button.is-active { border-color: var(--line); background: #fff; color: var(--sage-700); }
+  .player-toolbar__actions button:disabled { cursor: not-allowed; opacity: .58; }
+  .player-toolbar__actions button:disabled:hover { border-color: transparent; background: none; color: var(--muted); }
   .player-toolbar__actions svg { width: 14px; }
   .scene-wrap { min-height: 0; position: relative; overflow: hidden; background: #e8ece7; }
   .learning-canvas { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; touch-action: none; }
@@ -440,7 +442,7 @@
   .scene-help svg { width: 13px; }
   .fallback-diagram { position: absolute; inset: 0; display: grid; place-items: center; background: #e8ece7; }
   .fallback-diagram svg { width: min(78%, 620px); height: 80%; }
-  .fallback-diagram__label { position: absolute; left: 17px; bottom: 16px; padding: 10px 12px; border-radius: 9px; background: rgba(255,255,255,.82); }
+  .fallback-diagram__label { max-width: min(360px, calc(100% - 34px)); position: absolute; left: 17px; bottom: 16px; padding: 10px 12px; border-radius: 9px; background: rgba(255,255,255,.82); }
   .fallback-diagram__label span, .fallback-diagram__label strong, .fallback-diagram__label small { display: block; }
   .fallback-diagram__label span { color: var(--faint); font-size: .57rem; }
   .fallback-diagram__label strong { font-size: .8rem; }
@@ -708,4 +710,3 @@
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
 }
-

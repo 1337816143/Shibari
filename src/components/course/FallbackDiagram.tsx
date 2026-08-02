@@ -1,6 +1,6 @@
 import type { CourseStep } from '../../types/course'
 
-export function FallbackDiagram({ step, progress }: { step: CourseStep; progress: number }) {
+export function FallbackDiagram({ step, progress, reason }: { step: CourseStep; progress: number; reason?: string }) {
   return (
     <div className="fallback-diagram" role="img" aria-label={`简化分步图：${step.title}`}>
       <svg viewBox="0 0 620 480" aria-hidden="true">
@@ -19,8 +19,11 @@ export function FallbackDiagram({ step, progress }: { step: CourseStep; progress
         </g>
         <circle cx="164" cy="354" r="66" fill="none" stroke="#ef6c5a" strokeWidth="3" strokeDasharray="8 9" opacity=".7" />
       </svg>
-      <div className="fallback-diagram__label"><span>当前步骤</span><strong>{step.shortLabel}</strong><small>低性能 / 减少动态效果模式</small></div>
+      <div className="fallback-diagram__label">
+        <span>当前步骤</span>
+        <strong>{step.shortLabel}</strong>
+        <small role="status">{reason ?? '低性能 / 减少动态效果模式'}</small>
+      </div>
     </div>
   )
 }
-

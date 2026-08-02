@@ -9,7 +9,9 @@ export interface DeviceCapability {
 function supportsWebGL(): boolean {
   try {
     const canvas = document.createElement('canvas')
-    return Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'))
+    const context = canvas.getContext('webgl2') || canvas.getContext('webgl')
+    context?.getExtension('WEBGL_lose_context')?.loseContext()
+    return Boolean(context)
   } catch {
     return false
   }
@@ -41,4 +43,3 @@ export function detectDeviceCapability(): DeviceCapability {
 
   return { tier: 'medium', supportsWebGL: true, prefersReducedMotion: false, reason: 'balanced-device', maxDpr: 1.25 }
 }
-

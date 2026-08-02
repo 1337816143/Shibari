@@ -9,6 +9,7 @@ import { PlayerControls } from './PlayerControls'
 import { StepPanel } from './StepPanel'
 import { ViewControls } from './ViewControls'
 import { LearningScene } from '../three/LearningScene'
+import { ThreeSceneBoundary } from '../three/ThreeSceneBoundary'
 
 interface PlayerOptions {
   mirrored: boolean
@@ -37,6 +38,7 @@ export function CoursePlayer({ course, studio = false }: { course: Course; studi
   const [viewId, setViewId] = useState(savedRecord?.lastView ?? 'front')
   const [autoFollow, setAutoFollow] = useState(true)
   const [fallback, setFallback] = useState(capability.tier === 'low')
+  const [sceneFailed, setSceneFailed] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   const [options, setOptions] = useState<PlayerOptions>({
     mirrored: false,
@@ -53,6 +55,14 @@ export function CoursePlayer({ course, studio = false }: { course: Course; studi
   const step = course.steps[Math.max(0, stepIndex)]
   const effectiveViewId = autoFollow ? (step.closeupView ?? step.recommendedView) : viewId
   const preset = course.cameraPresets.find((item) => item.id === effectiveViewId) ?? course.cameraPresets[0]
+  const threeUnavailable = !capability.supportsWebGL || sceneFailed
+  const fallbackReason = sceneFailed
+    ? '3D 初始化失败，已自动切换到简化分步图'
+    : !capability.supportsWebGL
+      ? '当前浏览器无法启用 WebGL，已自动使用简化分步图'
+      : capability.prefersReducedMotion
+        ? '已尊重系统的减少动态效果设置'
+        : '低性能设备简化模式'
 
   useEffect(() => {
     if (!playing) return
@@ -118,6 +128,17 @@ export function CoursePlayer({ course, studio = false }: { course: Course; studi
     else await document.exitFullscreen()
   }
 
+  const toggleFallback = () => {
+    if (fallback && threeUnavailable) return
+    setFallback((value) => !value)
+  }
+
+  const handleSceneError = () => {
+    setPlaying(false)
+    setSceneFailed(true)
+    setFallback(true)
+  }
+
   return (
     <div ref={playerRef} className={`course-player ${studio ? 'course-player--studio' : ''} ${fullscreen ? 'is-fullscreen' : ''}`}>
       <div className="player-stage-column">
@@ -125,22 +146,32 @@ export function CoursePlayer({ course, studio = false }: { course: Course; studi
           <div className="player-toolbar__status"><span className="active-segment-dot" /> 当前绳段：<strong>{step.activeSegmentIds.length ? course.ropeSegments.find((segment) => step.activeSegmentIds.includes(segment.id))?.label : '安全与检查'}</strong></div>
           <div className="player-toolbar__actions">
             <button type="button" className={autoFollow ? 'is-active' : ''} onClick={() => setAutoFollow((value) => !value)} aria-pressed={autoFollow}><Gauge /> 自动跟随</button>
-            <button type="button" className={fallback ? 'is-active' : ''} onClick={() => setFallback((value) => !value)}><MonitorCog /> {fallback ? '启用 3D' : '简化模式'}</button>
+            <button
+              type="button"
+              className={fallback ? 'is-active' : ''}
+              onClick={toggleFallback}
+              disabled={fallback && threeUnavailable}
+              title={threeUnavailable ? fallbackReason : undefined}
+            >
+              <MonitorCog /> {fallback ? (threeUnavailable ? '3D 不可用' : '启用 3D') : '简化模式'}
+            </button>
             <button type="button" onClick={() => void toggleFullscreen()}>{fullscreen ? <Minimize2 /> : <Maximize2 />} {fullscreen ? '退出全屏' : '全屏'}</button>
           </div>
         </div>
         <div className="scene-wrap">
           {fallback ? (
-            <FallbackDiagram step={step} progress={progress} />
+            <FallbackDiagram step={step} progress={progress} reason={fallbackReason} />
           ) : (
-            <LearningScene
-              course={course}
-              step={step}
-              progress={progress}
-              preset={preset}
-              playing={playing}
-              options={{ ...options, quality: capability.tier, maxDpr: capability.maxDpr }}
-            />
+            <ThreeSceneBoundary onError={handleSceneError}>
+              <LearningScene
+                course={course}
+                step={step}
+                progress={progress}
+                preset={preset}
+                playing={playing}
+                options={{ ...options, quality: capability.tier, maxDpr: capability.maxDpr }}
+              />
+            </ThreeSceneBoundary>
           )}
           <div className="scene-legend"><span><i className="legend-current" /> 当前</span><span><i className="legend-complete" /> 已完成</span><span><i className="legend-risk" /> 风险区</span><span><i className="legend-contact" /> 接触点</span></div>
           <div className="scene-help"><Info /> 拖动旋转 · 滚轮/双指缩放 · 空格播放 · ← → 切换步骤</div>
