@@ -539,7 +539,8 @@
   .studio-heading > a { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: .72rem; }
   .studio-heading > a svg { width: 16px; }
   .studio-heading > div { text-align: right; }
-  .studio-heading strong, .studio-heading span { display: block; }
+  .studio-heading h1, .studio-heading span { display: block; }
+  .studio-heading h1 { font-size: .9rem; font-weight: 700; letter-spacing: -.01em; }
   .studio-heading span { display: flex; align-items: center; justify-content: end; gap: 5px; margin-top: 2px; color: #976429; font-size: .63rem; }
   .studio-heading span svg { width: 13px; }
 
