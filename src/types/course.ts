@@ -62,6 +62,29 @@ export interface CourseStep {
   handHint?: 'left' | 'right' | 'both' | 'none'
 }
 
+export interface ReleasePhase {
+  id: string
+  order: number
+  title: string
+  shortLabel: string
+  durationSeconds: number
+  segmentIds: readonly string[]
+  instruction: string
+  direction: string
+  tension: string
+  checkpoint: string
+  warning: string
+  communication: string
+  recommendedView: string
+}
+
+export interface ReleasePlan {
+  title: string
+  disclaimer: string
+  emergencyInstruction: string
+  phases: readonly ReleasePhase[]
+}
+
 export interface CourseSource {
   label: string
   url?: string
@@ -94,6 +117,7 @@ export interface Course {
   prohibitedAreas: readonly string[]
   stopSymptoms: readonly string[]
   quickRelease: readonly string[]
+  releasePlan: ReleasePlan
   safetyShearsPlacement: string
   review: {
     status: ReviewStatus
@@ -134,4 +158,3 @@ export interface CatalogEntry {
   availability: CourseAvailability
   stepCount: number
 }
-

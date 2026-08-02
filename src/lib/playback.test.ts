@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { singleColumnDemo } from '../data/courses/singleColumnDemo'
-import { clampProgress, getSegmentReveal, getStepIndexAtProgress, getStepLocalProgress } from './playback'
+import {
+  clampProgress,
+  getReleasePhaseBounds,
+  getReleasePhaseIndexAtProgress,
+  getReleaseSegmentReveal,
+  getSegmentReveal,
+  getStepIndexAtProgress,
+  getStepLocalProgress,
+  progressForReleasePhase,
+} from './playback'
 
 describe('playback helpers', () => {
   it('clamps invalid progress', () => {
@@ -23,5 +32,29 @@ describe('playback helpers', () => {
     expect(getSegmentReveal(segment, segment.startProgress)).toBe(0)
     expect(getSegmentReveal(segment, segment.endProgress)).toBe(1)
   })
-})
 
+  it('maps weighted release phases and removes rope segments in declared order', () => {
+    const phases = singleColumnDemo.releasePlan.phases
+    singleColumnDemo.ropeSegments.forEach((segment) => {
+      expect(getReleaseSegmentReveal(segment.id, phases, 0)).toBe(1)
+      expect(getReleaseSegmentReveal(segment.id, phases, 1)).toBe(0)
+    })
+    const workingEndsPhase = phases.findIndex((phase) => phase.segmentIds.includes('working-ends'))
+    const [start, end] = getReleasePhaseBounds(phases, workingEndsPhase)
+
+    expect(getReleasePhaseIndexAtProgress(phases, start)).toBe(workingEndsPhase)
+    expect(progressForReleasePhase(phases, workingEndsPhase)).toBe(start)
+    expect(getReleaseSegmentReveal('working-ends', phases, start)).toBe(1)
+    expect(getReleaseSegmentReveal('working-ends', phases, (start + end) / 2)).toBeCloseTo(0.5)
+    expect(getReleaseSegmentReveal('working-ends', phases, end)).toBe(0)
+
+    const crossingPhase = phases.findIndex((phase) => phase.id === 'release-crossing')
+    const [crossingStart, crossingEnd] = getReleasePhaseBounds(phases, crossingPhase)
+    const firstQuarter = crossingStart + (crossingEnd - crossingStart) * 0.25
+    const thirdQuarter = crossingStart + (crossingEnd - crossingStart) * 0.75
+    expect(getReleaseSegmentReveal('return-under', phases, firstQuarter)).toBeCloseTo(0.5)
+    expect(getReleaseSegmentReveal('cross-over', phases, firstQuarter)).toBe(1)
+    expect(getReleaseSegmentReveal('return-under', phases, thirdQuarter)).toBe(0)
+    expect(getReleaseSegmentReveal('cross-over', phases, thirdQuarter)).toBeCloseTo(0.5)
+  })
+})

@@ -5,6 +5,8 @@ const inUnitRange = (value: number) => Number.isFinite(value) && value >= 0 && v
 export function validateCourse(course: Course): string[] {
   const errors: string[] = []
   const stepIds = new Set<string>()
+  const releasePhaseIds = new Set<string>()
+  const releasedSegmentIds = new Set<string>()
   const segmentIds = new Set(course.ropeSegments.map((segment) => segment.id))
   const viewIds = new Set(course.cameraPresets.map((preset) => preset.id))
 
@@ -13,6 +15,7 @@ export function validateCourse(course: Course): string[] {
     errors.push('Published courses require at least one named reviewer.')
   }
   if (course.steps.length === 0) errors.push('Course must contain at least one step.')
+  if (course.releasePlan.phases.length === 0) errors.push('Course must contain at least one release phase.')
 
   course.steps.forEach((step, index) => {
     const [start, end] = step.timeline
@@ -31,6 +34,12 @@ export function validateCourse(course: Course): string[] {
     }
     if (step.closeupView && !viewIds.has(step.closeupView)) {
       errors.push(`Step ${step.id} references an unknown close-up view.`)
+    }
+    if (![step.objective, step.startFrom, step.route, step.direction, step.tension, step.communication].every((value) => value.trim().length > 0)) {
+      errors.push(`Step ${step.id} is missing required instructional text.`)
+    }
+    if (step.checkpoints.length === 0 || step.commonErrors.length === 0 || step.risks.length === 0) {
+      errors.push(`Step ${step.id} is missing checks, errors, or risks.`)
     }
     step.activeSegmentIds.forEach((id) => {
       if (!segmentIds.has(id)) errors.push(`Step ${step.id} references unknown segment ${id}.`)
@@ -52,6 +61,36 @@ export function validateCourse(course: Course): string[] {
     }
   })
 
+  course.releasePlan.phases.forEach((phase, index) => {
+    if (releasePhaseIds.has(phase.id)) errors.push(`Duplicate release phase id: ${phase.id}`)
+    releasePhaseIds.add(phase.id)
+    if (phase.order !== index + 1) errors.push(`Release phase ${phase.id} has a non-sequential order.`)
+    if (!Number.isFinite(phase.durationSeconds) || phase.durationSeconds <= 0) {
+      errors.push(`Release phase ${phase.id} has an invalid duration.`)
+    }
+    if (!viewIds.has(phase.recommendedView)) {
+      errors.push(`Release phase ${phase.id} references an unknown recommended view.`)
+    }
+    if (![phase.instruction, phase.direction, phase.tension, phase.checkpoint, phase.warning, phase.communication].every((value) => value.trim().length > 0)) {
+      errors.push(`Release phase ${phase.id} is missing required safety text.`)
+    }
+    phase.segmentIds.forEach((id) => {
+      if (!segmentIds.has(id)) errors.push(`Release phase ${phase.id} references unknown segment ${id}.`)
+      if (releasedSegmentIds.has(id)) errors.push(`Release segment ${id} is assigned more than once.`)
+      releasedSegmentIds.add(id)
+    })
+  })
+
+  course.ropeSegments.forEach((segment) => {
+    if (!releasedSegmentIds.has(segment.id)) errors.push(`Release plan does not remove segment ${segment.id}.`)
+  })
+
+  if (!course.directionMarkers.some((marker) => marker.kind === 'release')) {
+    errors.push('Course requires at least one release direction marker.')
+  }
+  if (!course.releasePlan.disclaimer.trim() || !course.releasePlan.emergencyInstruction.trim()) {
+    errors.push('Release plan requires a disclaimer and emergency instruction.')
+  }
+
   return errors
 }
-
